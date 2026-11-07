@@ -1,8 +1,8 @@
 # Changelog
 
-## [1.5.0](https://github.com/poipoi/omawall/compare/v1.4.1...v1.5.0) (2026-11-07)
+## [1.5.0](https://github.com/poipoi/omawall-plus/compare/v1.4.1...v1.5.0) (2026-11-07)
 
-Fork of [matjam/omawall](https://github.com/matjam/omawall) 1.4.1, now `poipoi.omawall`.
+Renamed to OmaWall+. Fork of [matjam/omawall](https://github.com/matjam/omawall) 1.4.1 (plugin id `poipoi.omawall`).
 
 ### Features
 

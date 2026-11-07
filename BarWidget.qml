@@ -291,7 +291,7 @@ Panel {
     return out
   }
 
-  readonly property string previewTitle: "omawall" + (version === "" ? "" : " v" + version)
+  readonly property string previewTitle: "OmaWall+" + (version === "" ? "" : " v" + version)
 
   // Only when there is nothing to list; otherwise the images speak for
   // themselves.
@@ -340,7 +340,7 @@ Panel {
   Process {
     id: saveProc
     onExited: function(code, status) {
-      if (code !== 0) console.warn("omawall: failed to save setting (exit " + code + ")")
+      if (code !== 0) console.warn("OmaWall+: failed to save setting (exit " + code + ")")
       root.drainSaves()
       if (!root._saveQueue.length) refreshTimer.restart()
     }
@@ -433,7 +433,7 @@ Panel {
       waitForEnd: true
       onStreamFinished: {
         var err = String(text || "").trim()
-        if (err !== "") console.warn("omawall: zenity: " + err)
+        if (err !== "") console.warn("OmaWall+: zenity: " + err)
       }
     }
     stdout: StdioCollector {

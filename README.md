@@ -1,4 +1,4 @@
-# omawall
+# OmaWall+
 
 Folder-backed wallpapers for [Omarchy](https://omarchy.org) Quattro. Every
 display gets its own image, its own settings if you want them, and your whole
@@ -14,7 +14,7 @@ desktop theme can follow along.
 > process, with your permissions. Read the source first. No promises about
 > your cat.
 
-![omawall](preview.png)
+![OmaWall+](preview.png)
 
 ## What's different in this fork
 
@@ -53,15 +53,15 @@ install it and decide later.
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/poipoi/omawall.git --enable
+omarchy plugin add https://github.com/poipoi/omawall-plus.git --enable
 ```
 
 Put the widget on the `right` when prompted. This disables the built-in
 `omarchy.background` — they would fight over the wallpaper — and removing
-omawall restores it.
+OmaWall+ restores it.
 
 **Theme generation needs [matugen](https://github.com/InioX/matugen), which
-omawall does not install for you:**
+OmaWall+ does not install for you:**
 
 ```bash
 sudo pacman -S matugen    # Arch extra repo, no AUR helper needed
@@ -155,7 +155,7 @@ theme won't stick.
 **It stalls the session for a moment.** `omarchy-theme-set` retints every
 themed app, and the compositor stops accepting input while it does — the
 pointer freezes, and a held key can repeat. That's the cost of any Omarchy
-theme change; omawall just triggers it more often. So don't pair it with a
+theme change; OmaWall+ just triggers it more often. So don't pair it with a
 short interval. Either turn on **Shuffle on unlock or wake** and set the
 interval to `0`, or keep the interval and generate by hand. If you game,
 prefer neither.
@@ -187,7 +187,7 @@ bin/omawall-generate-theme --image ~/Pictures/wall.jpg --mode dark [--no-apply]
 Omarchy Quattro · `zenity` for the Browse button (ships with Omarchy) ·
 `matugen` for theme generation only.
 
-matugen is GPL-2.0 and omawall is MIT; omawall only executes it as a separate
+matugen is GPL-2.0 and OmaWall+ is MIT; it only executes it as a separate
 process, so the licenses stay independent. No network access, and nothing is
 written outside `~/.config/omarchy`.
 

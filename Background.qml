@@ -651,7 +651,7 @@ Item {
     next[path] = true
     badImages = next
     dropFromQueue(path)
-    console.warn("omawall: skipping image that could not be decoded: " + path)
+    console.warn("OmaWall+: skipping image that could not be decoded: " + path)
     replaceBadImage(path)
   }
 
