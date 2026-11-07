@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "id": "matjam.omawall",
+  "id": "poipoi.omawall",
   "name": "omawall",
-  "version": "1.4.1",
-  "author": "Nathan Ollerenshaw (matjam)",
+  "version": "1.5.0",
+  "author": "poipoi (fork of Nathan Ollerenshaw's omawall)",
   "description": "Replaces the Omarchy background service with a folder-backed one. Each display can have its own folder, shuffle through it or stay pinned to one image, and scale it to taste. Can also generate an Omarchy theme from the primary display's wallpaper, so the whole desktop tracks the picture behind it.",
   "license": "MIT",
-  "homepage": "https://github.com/matjam/omawall",
-  "repository": "https://github.com/matjam/omawall",
+  "homepage": "https://github.com/poipoi/omawall",
+  "repository": "https://github.com/poipoi/omawall",
   "kinds": [
     "service",
     "bar-widget"
@@ -28,6 +28,8 @@
       "displayConfig": {},
       "perDisplay": true,
       "intervalSec": 0,
+      "staggerShuffle": true,
+      "transitionStyle": "wipe",
       "shuffleOnWake": false,
       "autoTheme": false,
       "themeMode": "dark",
@@ -71,6 +73,20 @@
         "max": 86400,
         "step": 60,
         "defaultValue": 0
+      },
+      {
+        "key": "staggerShuffle",
+        "type": "boolean",
+        "label": "Stagger displays",
+        "defaultValue": true,
+        "description": "Auto-shuffle one display at a time (interval / display count) instead of all together."
+      },
+      {
+        "key": "transitionStyle",
+        "type": "string",
+        "label": "Transition",
+        "defaultValue": "wipe",
+        "description": "wipe, fade or slide."
       },
       {
         "key": "shuffleOnWake",

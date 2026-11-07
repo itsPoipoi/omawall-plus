@@ -16,8 +16,8 @@ import qs.Ui
 // the wallpaper without a restart.
 Panel {
   id: root
-  moduleName: "matjam.omawall"
-  ipcTarget: "matjam.omawall"
+  moduleName: "poipoi.omawall"
+  ipcTarget: "poipoi.omawall"
   manageIpc: false
 
   implicitWidth: button.implicitWidth
@@ -25,6 +25,11 @@ Panel {
 
   readonly property bool perDisplay: setting("perDisplay", true) === true
   readonly property int intervalSec: Math.max(0, Number(setting("intervalSec", 0)) || 0)
+  readonly property bool staggerShuffle: setting("staggerShuffle", true) === true
+  readonly property string transitionStyle: {
+    var t = String(setting("transitionStyle", "wipe"))
+    return (t === "fade" || t === "slide") ? t : "wipe"
+  }
   readonly property bool shuffleOnWake: setting("shuffleOnWake", false) === true
   readonly property bool autoTheme: setting("autoTheme", false) === true
   readonly property string primaryDisplay: String(setting("primaryDisplay", "")).trim()
@@ -497,7 +502,7 @@ Panel {
 
   // The bar is instantiated once per screen, so on a multi-monitor setup this
   // registers twice and Quickshell logs "another handler is registered for
-  // target matjam.omawall". First one wins, the panel still opens, and the
+  // target poipoi.omawall". First one wins, the panel still opens, and the
   // stock omarchy.power / omarchy.dropbox widgets emit the same warning — it
   // is the house pattern, not a fault here.
   IpcHandler {
@@ -1004,7 +1009,7 @@ Panel {
           spacing: Style.space(12)
 
           NumberField {
-            label: "Auto-shuffle every (seconds, 0 = off)"
+            label: "Auto-shuffle every (seconds per display, 0 = off)"
             value: root.intervalSec
             from: 0
             to: 86400
@@ -1012,6 +1017,31 @@ Panel {
             foreground: root.fg
             fontFamily: root.fontFamily
             onModified: function(v) { root.persist("intervalSec", v) }
+          }
+
+          Toggle {
+            width: parent.width
+            label: "Stagger displays"
+            description: "Shuffle one display at a time (interval divided by display count) instead of all together."
+            checked: root.staggerShuffle
+            foreground: root.fg
+            fontFamily: root.fontFamily
+            onClicked: root.persist("staggerShuffle", !root.staggerShuffle)
+          }
+
+          PanelSectionHeader {
+            text: "TRANSITION"
+            foreground: root.fg
+            fontFamily: root.fontFamily
+          }
+
+          ButtonGroup {
+            width: parent.width
+            options: ["Wipe", "Fade", "Slide"]
+            value: root.transitionStyle === "fade" ? "Fade" : root.transitionStyle === "slide" ? "Slide" : "Wipe"
+            foreground: root.fg
+            fontFamily: root.fontFamily
+            onChanged: function(v) { root.persist("transitionStyle", String(v).toLowerCase()) }
           }
 
           Toggle {

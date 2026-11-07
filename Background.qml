@@ -34,7 +34,7 @@ Item {
 
   // ------------------------------------------------------------- settings
 
-  readonly property string pluginId: (manifest && manifest.id) || "matjam.omawall"
+  readonly property string pluginId: (manifest && manifest.id) || "poipoi.omawall"
   readonly property var settings: shellSettings.settings
 
   ShellSettings {
@@ -43,6 +43,13 @@ Item {
   }
 
   readonly property bool perDisplay: setting("perDisplay", true) === true
+  // Staggered auto-shuffle: one display per tick instead of all at once.
+  readonly property bool staggerShuffle: setting("staggerShuffle", true) === true
+  // wipe | fade | slide
+  readonly property string transitionStyle: {
+    var t = String(setting("transitionStyle", "wipe"))
+    return (t === "fade" || t === "slide") ? t : "wipe"
+  }
   readonly property int intervalSec: Math.max(0, Number(setting("intervalSec", 0)) || 0)
 
   // ---------------------------------------------------- per-display config
@@ -509,10 +516,11 @@ Item {
   //
   // A display in single mode keeps its pinned image and consumes nothing from
   // any queue: that is how one monitor stays put while another rotates.
-  function pickForScreens() {
+  function pickForScreens(only) {
     var names = screenNames()
     var picks = ({})
     if (!names.length) return picks
+    only = only ? String(only) : ""
 
     // What is on screen now, kept out of the head of a refilled queue.
     var avoid = []
@@ -533,6 +541,11 @@ Item {
       }
       var key = poolKeyFor(name)
       if (key === "") continue
+      // Staggered shuffle: every other display keeps what it is showing.
+      if (only && name !== only) {
+        if (displayedMap[name]) picks[name] = String(displayedMap[name])
+        continue
+      }
       if (!groups[key]) { groups[key] = []; order.push(key) }
       groups[key].push(name)
     }
@@ -558,10 +571,54 @@ Item {
     return picks
   }
 
-  function shuffle(instant) {
+  // Displays that take part in the staggered auto-shuffle, in a stable order.
+  function rotationScreens() {
+    var out = []
+    var names = screenNames().slice().sort()
+    for (var i = 0; i < names.length; i++) {
+      var cfg = configFor(names[i])
+      if (cfg.mode === "shuffle" && poolKeyFor(names[i]) !== "") out.push(names[i])
+    }
+    return out
+  }
+
+  // Per-display deadlines (ms since epoch). Every display changes exactly
+  // intervalSec after its own last change; the displays start offset from one
+  // another by intervalSec / N, which is what staggers them. Driven from a
+  // short poll against these deadlines rather than from one timer's period, so
+  // drift or a long transition cannot shorten any display's interval.
+  property var dueAt: ({})
+  onIntervalSecChanged: dueAt = ({})
+  onStaggerShuffleChanged: dueAt = ({})
+
+  function autoShuffleTick() {
+    var now = Date.now()
+    var period = intervalSec * 1000
+    var rot = (perDisplay && staggerShuffle) ? rotationScreens() : []
+
+    if (rot.length < 2) {
+      if (!dueAt["*"]) dueAt = { "*": now + period }
+      if (now >= dueAt["*"]) { dueAt = { "*": now + period }; shuffle(false) }
+      return
+    }
+
+    var next = ({})
+    var fire = ""
+    for (var i = 0; i < rot.length; i++) {
+      var d = dueAt[rot[i]]
+      if (!d) d = now + period * (i + 1) / rot.length
+      if (!fire && now >= d) { fire = rot[i]; d = now + period }
+      next[rot[i]] = d
+    }
+    dueAt = next
+    if (!poolLoaded) { rescan(); return }
+    if (fire) shuffle(false, fire)
+  }
+
+  function shuffle(instant, only) {
     if (!hasFolder()) return
     if (!poolLoaded) { rescan(); return }
-    var picks = pickForScreens()
+    var picks = pickForScreens(only)
     var empty = true
     for (var k in picks) { empty = false; break }
     if (empty) return
@@ -782,7 +839,16 @@ Item {
       if (picks[n] !== displayedMap[n]) changed = true
     }
     if (!changed && !instant) return
-    beginTransition(displayedMap, picks, nextOld, instant === true || displayedIsEmpty())
+    var inst = instant === true || displayedIsEmpty()
+    var nextIncoming = picks
+    if (!inst) {
+      // A display whose image is not changing sits the transition out, so a
+      // staggered shuffle only animates the one display being refreshed.
+      nextIncoming = ({})
+      for (var k in picks)
+        if (picks[k] !== displayedMap[k]) nextIncoming[k] = picks[k]
+    }
+    beginTransition(displayedMap, nextIncoming, nextOld, inst)
   }
 
   // Stock single-image path: fill every screen with the same value.
@@ -868,7 +934,10 @@ Item {
     if (revealStartedVersion === backgroundVersion) return
     var names = screenNames()
     if (!names.length) return
-    for (var i = 0; i < names.length; i++) if (!incomingReady[names[i]]) return
+    for (var i = 0; i < names.length; i++) {
+      if (!incomingMap[names[i]]) continue   // nothing incoming here
+      if (!incomingReady[names[i]]) return
+    }
     armReveal()
   }
 
@@ -1035,10 +1104,10 @@ Item {
 
   Timer {
     id: autoShuffleTimer
-    interval: Math.max(1, root.intervalSec) * 1000
+    interval: 250
     running: root.folderMode && root.intervalSec > 0
     repeat: true
-    onTriggered: root.shuffle(false)
+    onTriggered: root.autoShuffleTick()
   }
 
   Timer {
@@ -1055,7 +1124,7 @@ Item {
     from: 0
     to: 1
     duration: 420
-    easing.type: Easing.InOutCubic
+    easing.type: root.transitionStyle === "fade" ? Easing.InOutQuad : Easing.InOutCubic
     onFinished: {
       var names = root.screenNames()
       var next = ({})
@@ -1076,7 +1145,7 @@ Item {
   onDisplayConfigKeyChanged: configReload.restart()
   onPerDisplayConfigChanged: configReload.restart()
   onFolderChanged: configReload.restart()
-  onPerDisplayChanged: if (hasFolder()) shuffle(false)
+  onPerDisplayChanged: { dueAt = ({}); if (hasFolder()) shuffle(false) }
 
   Timer {
     id: configReload
@@ -1188,8 +1257,10 @@ Item {
         id: incomingLayer
         anchors.fill: parent
         visible: panel.incPath !== "" && incomingFrame.status === Image.Ready && (root.revealProgress >= 1 || root.revealArmed)
-        layer.enabled: panel.incPath !== "" && root.revealProgress < 1
+        layer.enabled: root.transitionStyle === "wipe" && panel.incPath !== "" && root.revealProgress < 1
         layer.smooth: true
+        opacity: root.transitionStyle === "fade" ? root.revealProgress : 1
+        transform: Translate { x: root.transitionStyle === "slide" ? incomingLayer.width * (1 - root.revealProgress) : 0 }
         layer.effect: MultiEffect {
           maskEnabled: true
           maskSource: revealMask

@@ -4,12 +4,31 @@ Folder-backed wallpapers for [Omarchy](https://omarchy.org) Quattro. Every
 display gets its own image, its own settings if you want them, and your whole
 desktop theme can follow along.
 
+> **This is a fork** of [matjam/omawall](https://github.com/matjam/omawall)
+> (plugin id `poipoi.omawall`). It adds staggered per-display shuffling and a
+> choice of wallpaper transitions; see [What's different](#whats-different-in-this-fork).
+> It can't run alongside the original: uninstall `matjam.omawall` first.
+
 > **Written by Claude**, Anthropic's coding agent. Tested on real hardware, but
 > tested isn't proven — and Omarchy plugins run unsandboxed inside your shell
 > process, with your permissions. Read the source first. No promises about
 > your cat.
 
 ![omawall](preview.png)
+
+## What's different in this fork
+
+- **Staggered shuffle.** With several displays, each one changes its wallpaper
+  every *x* seconds (the Auto-shuffle interval) rather than all at once. The
+  displays are offset from each other by *x / N*, where *N* is the number of
+  displays that shuffle. With `x = 10` and two displays, each changes every
+  10 s and they alternate 5 s apart. Each display has its own deadline, so the
+  interval is respected exactly. Toggle it with **Stagger displays** on the
+  **Shuffling** tab; off restores the original behavior, where every display
+  changes together.
+- **Transition styles.** Choose **Wipe** (the original diagonal wipe),
+  **Fade** (cross-fade) or **Slide** (new image slides in from the right).
+  Only displays that are getting a new image animate.
 
 ## Features
 
@@ -20,8 +39,9 @@ desktop theme can follow along.
 - **Four scaling modes** — zoom, fit height, fit width, or actual size.
 - **Every image before any repeat** — picks come off a shuffled queue that only
   reshuffles when it empties.
-- **Shuffle** on a timer, on unlock and screensaver exit, or by hand.
+- **Shuffle** on a timer (staggered per display), on unlock and screensaver exit, or by hand.
 - **Recursive scan** of `.jpg` `.jpeg` `.png` `.gif` `.bmp` `.webp`.
+- **Transitions** — wipe, fade or slide.
 - **Skips files it can't decode** and re-deals that display.
 - **Theme from wallpaper** — recolors everything Omarchy themes. Needs matugen.
 - **Bar widget** for all of it. Middle-click the icon for the next image;
@@ -33,7 +53,7 @@ install it and decide later.
 ## Install
 
 ```bash
-omarchy plugin add https://github.com/matjam/omawall.git --enable
+omarchy plugin add https://github.com/poipoi/omawall.git --enable
 ```
 
 Put the widget on the `right` when prompted. This disables the built-in
@@ -51,8 +71,8 @@ Everything else works without it, and the panel tells you when it's missing.
 Add it whenever; nothing needs reinstalling.
 
 ```bash
-omarchy plugin update matjam.omawall    # update
-omarchy plugin remove matjam.omawall    # remove, leaves nothing behind
+omarchy plugin update poipoi.omawall    # update
+omarchy plugin remove poipoi.omawall    # remove, leaves nothing behind
 ```
 
 ## Settings
@@ -75,7 +95,9 @@ Click the wallpaper icon in the bar. Three tabs: **Displays**, **Shuffling**,
 
 | Setting | Default | Does |
 | --- | --- | --- |
-| Auto-shuffle every | `0` | Seconds. `0` is off. |
+| Auto-shuffle every | `0` | Seconds per display. `0` is off. |
+| Stagger displays | on | Offset each display's shuffle by interval ÷ displays, instead of changing all at once. |
+| Transition | Wipe | Wipe, Fade or Slide. |
 | Shuffle on unlock or wake | off | Shuffle on unlock or screensaver exit instead. |
 | Different image per display | on | Off mirrors one image across displays sharing a folder. |
 
@@ -171,7 +193,8 @@ written outside `~/.config/omarchy`.
 
 ## Credits
 
-Extends Omarchy's built-in `omarchy.background`
+Fork of [matjam/omawall](https://github.com/matjam/omawall) by Nathan
+Ollerenshaw, MIT. Extends Omarchy's built-in `omarchy.background`
 ([basecamp/omarchy](https://github.com/basecamp/omarchy), MIT).
 
 MIT — see [LICENSE](LICENSE).

@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.5.0](https://github.com/poipoi/omawall/compare/v1.4.1...v1.5.0) (2026-11-07)
+
+Fork of [matjam/omawall](https://github.com/matjam/omawall) 1.4.1, now `poipoi.omawall`.
+
+### Features
+
+* staggered shuffle: each display changes every interval, offset from the others by interval / number of displays, with a "Stagger displays" toggle
+* transition styles: wipe, fade or slide, selectable on the Shuffling tab
+* only displays receiving a new image take part in a transition
+
+### Bug Fixes
+
+* per-display deadlines keep every display's shuffle interval exact
+* plugin id, IPC target and manifest links renamed to `poipoi.omawall`
+
 ## [1.4.1](https://github.com/matjam/omawall/compare/v1.4.0...v1.4.1) (2026-09-15)
 
 
